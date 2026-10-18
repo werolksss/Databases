@@ -1,0 +1,96 @@
+// 1. Вся информация о странах.
+(from c in Countries
+ select c)
+.Dump("2.1. Все страны");
+
+// 2. Названия стран.
+(from c in Countries
+ select c.Name)
+.Dump("2.2. Названия стран");
+
+// 3. Названия столиц.
+(from c in Countries
+ select c.Capital)
+.Dump("2.3. Столицы");
+
+// 4. Названия европейских стран.
+(from c in Countries
+ where c.Continent == "Европа"
+ select c.Name)
+.Dump("2.4. Европейские страны");
+
+// 5. Страны с площадью больше 1 млн км².
+(from c in Countries
+ where c.Area > 1000000
+ select c.Name)
+.Dump("2.5. Площадь больше 1 млн км²");
+
+
+// 1. Страны, в названии которых есть обе буквы: a и u.
+(from c in Countries
+ where c.Name.ToLower().Contains("a")
+    && c.Name.ToLower().Contains("u")
+ select c)
+.Dump("3.1. Есть буквы a и u");
+
+// 2. Страны, название которых начинается с a.
+(from c in Countries
+ where c.Name.ToLower().StartsWith("a")
+ select c)
+.Dump("3.2. Название начинается с a");
+
+// 3. Названия стран с площадью от 100 тыс. до 1 млн км².
+(from c in Countries
+ where c.Area >= 100000 && c.Area <= 1000000
+ select c.Name)
+.Dump("3.3. Площадь от 100 тыс. до 1 млн км²");
+
+// 4. Названия стран с населением больше 100 млн.
+(from c in Countries
+ where c.Population > 100000000
+ select c.Name)
+.Dump("3.4. Население больше 100 млн");
+
+
+// 1. Топ-5 стран по площади.
+(from c in Countries
+ orderby c.Area descending
+ select c)
+.Take(5)
+.Dump("4.1. Топ-5 по площади");
+
+// 2. Топ-5 стран по населению.
+(from c in Countries
+ orderby c.Population descending
+ select c)
+.Take(5)
+.Dump("4.2. Топ-5 по населению");
+
+// 3. Страна с самой большой площадью.
+(from c in Countries
+ orderby c.Area descending
+ select c)
+.FirstOrDefault()
+.Dump("4.3. Самая большая площадь");
+
+// 4. Страна с самым большим населением.
+(from c in Countries
+ orderby c.Population descending
+ select c)
+.FirstOrDefault()
+.Dump("4.4. Самое большое население");
+
+// 5. Страна с самой маленькой площадью в Африке.
+(from c in Countries
+ where c.Continent == "Африка"
+ orderby c.Area
+ select c)
+.FirstOrDefault()
+.Dump("4.5. Минимальная площадь в Африке");
+
+// 6. Средняя площадь стран в Азии.
+(from c in Countries
+ where c.Continent == "Азия"
+ select c.Area)
+.Average()
+.Dump("4.6. Средняя площадь стран Азии, км²");
