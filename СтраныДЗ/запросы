@@ -1,0 +1,185 @@
+// Общая выборка: страны, части света и столицы.
+var countries = Countries
+    .Join(Continents,
+        c => c.ContinentId,
+        p => p.Id,
+        (c, p) => new
+        {
+            c.Id,
+            c.Name,
+            c.Population,
+            c.Area,
+            Continent = p.Name
+        })
+    .Join(Cities.Where(city => city.IsCapital),
+        c => c.Id,
+        city => city.CountryId,
+        (c, city) => new
+        {
+            c.Id,
+            c.Name,
+            c.Population,
+            c.Area,
+            c.Continent,
+            Capital = city.Name,
+            CapitalPopulation = city.Population
+        });
+
+// Общая выборка городов с названиями стран.
+var cities = Cities
+    .Join(Countries,
+        city => city.CountryId,
+        c => c.Id,
+        (city, c) => new
+        {
+            Country = c.Name,
+            City = city.Name,
+            city.Population,
+            city.IsCapital,
+            city.IsMajor
+        });
+
+// Страна для запросов о крупных городах.
+string selectedCountry = "China";
+
+
+// 1. Вся информация о странах, включая города.
+countries.Dump("2.1. Страны и столицы");
+cities.Dump("2.1. Города стран");
+
+// 2. Названия стран.
+Countries
+    .Select(c => c.Name)
+    .Dump("2.2. Названия стран");
+
+// 3. Названия столиц.
+Cities
+    .Where(c => c.IsCapital)
+    .Select(c => c.Name)
+    .Dump("2.3. Столицы");
+
+// 4. Крупные города выбранной страны.
+cities
+    .Where(c => c.Country == selectedCountry && c.IsMajor)
+    .Select(c => c.City)
+    .Dump("2.4. Крупные города: " + selectedCountry);
+
+// 5. Столицы с населением больше 5 миллионов.
+Cities
+    .Where(c => c.IsCapital && c.Population > 5000000)
+    .Select(c => c.Name)
+    .Dump("2.5. Столицы с населением больше 5 млн");
+
+// 6. Европейские страны.
+countries
+    .Where(c => c.Continent == "Европа")
+    .Select(c => c.Name)
+    .Dump("2.6. Европейские страны");
+
+// 7. Страны с площадью больше 1 млн км².
+Countries
+    .Where(c => c.Area > 1000000)
+    .Select(c => c.Name)
+    .Dump("2.7. Площадь больше 1 млн км²");
+
+
+// ЗАДАНИЕ 3
+
+// 1. Столицы с обеими буквами: a и p.
+Cities
+    .Where(c => c.IsCapital
+        && c.Name.ToLower().Contains("a")
+        && c.Name.ToLower().Contains("p"))
+    .Dump("3.1. Столицы с буквами a и p");
+
+// 2. Столицы, начинающиеся с k.
+Cities
+    .Where(c => c.IsCapital
+        && c.Name.ToLower().StartsWith("k"))
+    .Dump("3.2. Столицы на k");
+
+// 3. Страны с площадью от 100 тыс. до 1 млн км².
+Countries
+    .Where(c => c.Area >= 100000 && c.Area <= 1000000)
+    .Select(c => c.Name)
+    .Dump("3.3. Площадь от 100 тыс. до 1 млн км²");
+
+// 4. Страны с населением больше 100 млн.
+Countries
+    .Where(c => c.Population > 100000000)
+    .Select(c => c.Name)
+    .Dump("3.4. Население больше 100 млн");
+
+
+
+// 1. Топ-5 стран по площади.
+Countries
+    .OrderByDescending(c => c.Area)
+    .Take(5)
+    .Dump("4.1. Топ-5 стран по площади");
+
+// 2. Топ-5 столиц по населению.
+Cities
+    .Where(c => c.IsCapital)
+    .OrderByDescending(c => c.Population)
+    .ThenBy(c => c.Name)
+    .Take(5)
+    .Dump("4.2. Топ-5 столиц по населению");
+
+// 3. Страна с самой большой площадью.
+Countries
+    .OrderByDescending(c => c.Area)
+    .FirstOrDefault()
+    .Dump("4.3. Самая большая площадь");
+
+// 4. Столица с самым большим населением.
+Cities
+    .Where(c => c.IsCapital)
+    .OrderByDescending(c => c.Population)
+    .FirstOrDefault()
+    .Dump("4.4. Самое большое население столицы");
+
+// 5. Страна с самой маленькой площадью в Европе.
+countries
+    .Where(c => c.Continent == "Европа")
+    .OrderBy(c => c.Area)
+    .FirstOrDefault()
+    .Dump("4.5. Минимальная площадь в Европе");
+
+// 6. Средняя площадь стран Европы.
+countries
+    .Where(c => c.Continent == "Европа")
+    .Average(c => c.Area)
+    .Dump("4.6. Средняя площадь стран Европы, км²");
+
+// 7. Топ-3 городов выбранной страны по населению.
+cities
+    .Where(c => c.Country == selectedCountry)
+    .OrderByDescending(c => c.Population)
+    .Take(3)
+    .Dump("4.7. Топ-3 городов: " + selectedCountry);
+
+// 8. Общее количество стран.
+Countries
+    .Count()
+    .Dump("4.8. Количество стран");
+
+// 9–10. Количество стран по частям света.
+var counts = countries
+    .GroupBy(c => c.Continent)
+    .Select(g => new
+    {
+        Continent = g.Key,
+        CountryCount = g.Count()
+    });
+
+// Возвращаем все части света при равенстве максимума.
+int maxCount = counts.Max(c => c.CountryCount);
+
+counts
+    .Where(c => c.CountryCount == maxCount)
+    .Dump("4.9. Максимальное количество стран");
+
+counts
+    .OrderBy(c => c.Continent)
+    .Dump("4.10. Количество стран по частям света");
