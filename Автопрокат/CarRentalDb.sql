@@ -1,0 +1,21 @@
+CREATE DATABASE CarRentalDb;
+GO
+
+USE CarRentalDb;
+GO
+
+CREATE TABLE Brands
+(
+    Id INT IDENTITY PRIMARY KEY,
+    Name VARCHAR(50) NOT NULL,
+    Country VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Cars
+(
+    Id INT IDENTITY PRIMARY KEY,
+    Model VARCHAR(50) NOT NULL,
+    ReleaseYear INT NOT NULL,
+    PricePerDay DECIMAL(10,2) NOT NULL,
+    BrandId INT NOT NULL REFERENCES Brands(Id)
+);
